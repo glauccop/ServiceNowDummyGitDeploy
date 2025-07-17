@@ -1,64 +1,59 @@
-name: CI/CD com Change Gate SN
+name: Dummy Deployment com Change Gate
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
-  build:
+  desenvolvimento:
+    name: Desenvolvimento
     runs-on: ubuntu-latest
     steps:
-      - name: Build
-        run: echo "Construindo o app..."
+      - name: Simular deploy em desenvolvimento
+        run: echo "Deploy em DEV concluído!"
 
-  deploy-staging:
+  homologacao:
+    name: Homologação
     runs-on: ubuntu-latest
-    needs: build
+    needs: desenvolvimento
     steps:
-      - name: Deploy no Staging
-        run: echo "Deploy em staging aqui..."
+      - name: Simular deploy em homologação
+        run: echo "Deploy em HOMOLOGAÇÃO concluído!"
 
-  gate-change:
+  deployment_gate:
+    name: Criar Change com Gate
     runs-on: ubuntu-latest
-    needs: deploy-staging
+    needs: homologacao
     steps:
-      - name: Criar Change + Gate no ServiceNow
+      - name: Criar Change com Deployment Gate
         uses: ServiceNow/servicenow-devops-change@v6.0.0
         id: change
         with:
           devops-integration-token: ${{ secrets.SN_DEVOPS_INTEGRATION_TOKEN }}
-          instance-url: ${{ secrets.SN_INSTANCE_URL }}
-          tool-id: ${{ secrets.SN_ORCHESTRATION_TOOL_ID }}
+          instance-url: ${{ vars.SN_INSTANCE_URL }}
+          tool-id: ${{ vars.SN_ORCHESTRATION_TOOL_ID }}
           context-github: ${{ toJSON(github) }}
-          job-name: 'gate-change'
+          job-name: 'Gate de Produção'
           change-request: >-
             {
               "setCloseCode":"true",
-              "autoCloseChange":false,
               "attributes":{
-                "short_description":"Gate para produção",
-                "description":"Aguardando aprovação da Change no ServiceNow.",
-                "assignment_group":"<SYS_ID_GRUPO>",
-                "implementation_plan":"Deploy após aprovação.",
-                "backout_plan":"Reverter se falhar.",
-                "test_plan":"Testado no staging."
+                "short_description":"Deploy em produção com Gate",
+                "description":"Aguardando aprovação no ServiceNow",
+                "assignment_group":"a715cd759f2002002920bde8132e7018",
+                "implementation_plan":"Plano validado em homolog.",
+                "backout_plan":"Restaurar versão anterior",
+                "test_plan":"Testado em ambiente de homologação"
               }
             }
-          deployment-gate: '{"environment":"deployment_gate","jobName":"gate-change"}'
           interval: '60'
           timeout: '3600'
-          abortOnChangeStepTimeout: true
+          deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy para Produção"}'
 
-      - name: Info da Change
-        run: |
-          echo "Change # ${{ steps.change.outputs.change-request-number }} criado."
-          echo "Status: aguardando aprovação..."
-
-  deploy-production:
+  producao:
+    name: Deploy para Produção
+    needs: deployment_gate
     runs-on: ubuntu-latest
-    needs: gate-change
-    if: steps.change.outcome == 'success'
+    environment: deployment_gate
     steps:
-      - name: Deploy em Produção
-        run: echo "Deploy em produção liberado"
+      - name: Executar deploy em produção
+        run: echo "Deploy em PRODUÇÃO realizado com sucesso!"
