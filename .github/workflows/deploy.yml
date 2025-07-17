@@ -19,39 +19,48 @@ jobs:
       - name: Simular deploy em homologação
         run: echo "Deploy em HOMOLOGAÇÃO concluído!"
 
-  deployment_gate:
+  change:
     name: Criar Change com Gate
     runs-on: ubuntu-latest
     needs: homologacao
     steps:
-      - name: Criar Change com Deployment Gate
+      - name: ServiceNow DevOps Change Attributes
         uses: ServiceNow/servicenow-devops-change@v6.0.0
-        id: change
         with:
           devops-integration-token: ${{ secrets.SN_DEVOPS_INTEGRATION_TOKEN }}
           instance-url: ${{ vars.SN_INSTANCE_URL }}
           tool-id: ${{ vars.SN_ORCHESTRATION_TOOL_ID }}
           context-github: ${{ toJSON(github) }}
-          job-name: 'Gate de Produção'
+          job-name: 'Change Request Attributes'
           change-request: >-
             {
               "setCloseCode":"true",
               "attributes":{
-                "short_description":"Deploy em produção com Gate",
+                "short_description":"DevOps Git ServiceNowDummyGitDeploy",
                 "description":"Aguardando aprovação no ServiceNow",
-                "assignment_group":"a715cd759f2002002920bde8132e7018",
-                "implementation_plan":"Plano validado em homolog.",
+                "assignment_group":"68fab70e47b81250bda7e49b506d43ac",
+                "implementation_plan":"Software update is testes and results can be found in Test Summaries Tabe; When the change is approved the implementation happens automated by the CICD pipeline with the change planned start and end time window",
                 "backout_plan":"Restaurar versão anterior",
                 "test_plan":"Testado em ambiente de homologação"
               }
             }
-          interval: '60'
+          interval: '100'
           timeout: '3600'
-          deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy para Produção"}'
+          deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy"}'
+
+#    deploy:
+#        name: 'Deploy'
+#        needs: change
+#        runs-on: ubuntu-latest
+#        environment: deployment_gate
+#        steps:
+#          - name: Run deployment script
+#            run: echo Completed Deployment.
+
 #producao
   producao:
     name: Deploy para Produção
-    needs: deployment_gate
+    needs: change
     runs-on: ubuntu-latest
     environment: deployment_gate
     steps:
