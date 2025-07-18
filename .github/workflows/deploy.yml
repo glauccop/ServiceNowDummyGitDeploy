@@ -32,49 +32,107 @@ jobs:
       - name: Dummy Deploy - desenvolvimento
         run: echo "Deploy em HOMOLOGAÇÃO concluído!"
 
-  deploy:
-    name: ServiceNow-ChangeDevOps
-    needs: homologacao
+  ServiceNowDevOpsChange:
+    # jobs that must complete successfully before this job will run
+    needs: build
+    # type of machine to run the job on
     runs-on: ubuntu-latest
-
+    name: 'ServiceNow DevOps Change'
     steps:
-      - name: ServiceNow DevOps Change Approval
+      - name: ServiceNow Change
+        # For custom action based change, remove or disable the 'deployment-gate' configuration and the 'deploy' step. Ensure to update to the latest version of the custom action, for e.g. ServiceNow/servicenow-devops-change@v5.1.0
         uses: ServiceNow/servicenow-devops-change@v6.0.0
         id: create
         with:
-          ##devops-integration-user-name: ${{ vars.SN_DEVOPS_USER }}
-          ##devops-integration-user-password: ${{ secrets.SN_DEVOPS_PASSWORD }}
+          # Devops Integration Token
           devops-integration-token: ${{ secrets.SN_DEVOPS_INTEGRATION_TOKEN }}
+          # ServiceNow Instance URL
           instance-url: ${{ vars.SN_INSTANCE_URL }}
+          # Orchestration Tool Id
           tool-id: ${{ vars.SN_ORCHESTRATION_TOOL_ID }}
+          # GitHub Context
           context-github: ${{ toJSON(github) }}
-          job-name: 'ServiceNow Change Approval'
-          change-request: >-
-            {
-              "setCloseCode":"true",
-              "attributes":{
-              "short_description":"DevOps Git ServiceNowDummyGitDeploy",
-              "description":"Aguardando aprovação no ServiceNow",
-              "assignment_group":"68fab70e47b81250bda7e49b506d43ac",
-              "implementation_plan":"Procedimento CICD DevOps",
-              "backout_plan":"Restaurar versão anterior",
-              "test_plan":"Testado em ambiente de homologação"
-              }
-            }
-          interval: '100'
-          timeout: '3600'
-          changeCreationTimeOut: '3600'
-          abortOnChangeCreationFailure: true
-          abortOnChangeStepTimeout: true
+          # Display Name of the Job
+          job-name: 'ServiceNow DevOps Change'
+          # change-request: snDevOpsChange
+          # Unsupported fields are: risk, impact, and risk_impact_analysis
+          change-request: '{"attributes":{"requested_by":{"name": "DevOps Integration User"},"assignment_group":{"name": "IT Operations Support"},"priority": "2","comments": "This is a sample pipeline script to be added in your change step","work_notes": "Update this to work_notes","start_date": "2023-09-07 11:59:59","end_date": "2023-09-09 11:59:59"}}'
+          # You can specify the requested_by attribute either with name or sys_id. Example: "requested_by":{"name": "Test User"} or "requested_by": "62826bf03710200044e0bfc8bcbe5df1"
+          # You can specify the assignment_group attribute either with name or sys_id. Example: "assignment_group":{"name": "Change Approval Team"} or "assignment_group": "5f721d93c0a8010e015533746de18bf9"
+          # start_date: This is the planned start date
+          # end_date: This is the planned end date
+          # For deployment gate based change, uncomment the 'deployment-gate' configuration and the 'deploy' step 
+          # deployment-gate: '{"environment": "deploy-gates-demo", "jobName": "Deploy"}'
       - name: Output of Change Creation
         run: echo "change-request-number = ${{ steps.create.outputs.change-request-number }} and change-request-sys-id = ${{ steps.create.outputs.change-request-sys-id }} " >> $GITHUB_OUTPUT
-        # deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy"}'
         
   producao:
     name: Produção
-    needs: deploy
-    runs-on: ubuntu-latest
-    
+    needs: ServiceNowDevOpsChange
+    runs-on: ubuntu-latest 
     steps:
       - name: Executar deploy em produção
         run: echo "Deploy em PRODUÇÃO realizado com sucesso!"
+
+
+
+
+
+
+
+        #deploy:
+#  name: 'Deploy'
+#  needs: ServiceNowDevOpsChange
+#  runs-on: ubuntu-latest
+  #   environment: deploy-gates-demo
+#  steps:
+#    - name: Run deployment scripts
+#      run: echo Completed Deployment
+
+
+#  deploy:
+#    name: 'Deploy'
+#    needs: ServiceNowDevOpsChange
+#    runs-on: ubuntu-latest
+
+#    steps:
+#      - name: ServiceNow DevOps Change Approval
+#        uses: ServiceNow/servicenow-devops-change@v6.0.0
+#        id: create
+#        with:
+#          ##devops-integration-user-name: ${{ vars.SN_DEVOPS_USER }}
+#          ##devops-integration-user-password: ${{ secrets.SN_DEVOPS_PASSWORD }}
+#          devops-integration-token: ${{ secrets.SN_DEVOPS_INTEGRATION_TOKEN }}
+#          instance-url: ${{ vars.SN_INSTANCE_URL }}
+#          tool-id: ${{ vars.SN_ORCHESTRATION_TOOL_ID }}
+#          context-github: ${{ toJSON(github) }}
+#          job-name: 'ServiceNow Change Approval'
+#          change-request: >-
+#            {
+#              "setCloseCode":"true",
+#              "attributes":{
+#              "short_description":"DevOps Git ServiceNowDummyGitDeploy",
+#              "description":"Aguardando aprovação no ServiceNow",
+#              "assignment_group":"68fab70e47b81250bda7e49b506d43ac",
+#              "implementation_plan":"Procedimento CICD DevOps",
+#              "backout_plan":"Restaurar versão anterior",
+#              "test_plan":"Testado em ambiente de homologação"
+#              }
+#            }
+#          interval: '100'
+#          timeout: '3600'
+#          changeCreationTimeOut: '3600'
+#          abortOnChangeCreationFailure: true
+#          abortOnChangeStepTimeout: true
+#      - name: Output of Change Creation
+#        run: echo "change-request-number = ${{ steps.create.outputs.change-request-number }} and change-request-sys-id = ${{ steps.create.outputs.change-request-sys-id }} " >> $GITHUB_OUTPUT
+        # deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy"}'
+        
+#  producao:
+#    name: Produção
+#    needs: deploy
+#    runs-on: ubuntu-latest
+#    
+#    steps:
+#      - name: Executar deploy em produção
+#        run: echo "Deploy em PRODUÇÃO realizado com sucesso!"
