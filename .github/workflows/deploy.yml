@@ -19,6 +19,7 @@ jobs:
   desenvolvimento:
     name: Desenvolvimento
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Dummy Deploy - desenvolvimento
         run: echo "Deploy em DEV concluído!"
@@ -40,7 +41,7 @@ changeApproval:
     - name: ServiceNow DevOps Change Approval
       uses: ServiceNow/servicenow-devops-change@v6.0.0
       with:
-        devops-integration-user-name: ${{ secrets.SN_DEVOPS_USER }}
+        devops-integration-user-name: ${{ vars.SN_DEVOPS_USER }}
         devops-integration-user-password: ${{ secrets.SN_DEVOPS_PASSWORD }}
         ## devops-integration-token: ${{ secrets.SN_DEVOPS_INTEGRATION_TOKEN }}
         instance-url: ${{ vars.SN_INSTANCE_URL }}
@@ -70,7 +71,7 @@ changeApproval:
         
 deploy:
   name: 'Deploy'
-  needs: change
+  needs: changeApproval
   runs-on: ubuntu-latest
   
   steps:
@@ -79,7 +80,7 @@ deploy:
 
 producao:
   name: Deploy para Produção
-  needs: changeApproval
+  needs: deploy
   runs-on: ubuntu-latest
   
   steps:
