@@ -33,7 +33,7 @@ jobs:
         run: echo "Deploy em HOMOLOGAÇÃO concluído!"
 
   deploy:
-    name: ServiceNow Change Approval
+    name: ServiceNow-ChangeDevOps
     needs: homologacao
     runs-on: ubuntu-latest
 
@@ -49,7 +49,6 @@ jobs:
           tool-id: ${{ vars.SN_ORCHESTRATION_TOOL_ID }}
           context-github: ${{ toJSON(github) }}
           job-name: 'ServiceNow Change Approval'
-          #change-request: >- #'{"setCloseCode":"true","attributes":{"short_description":"DevOps Git ServiceNowDummyGitDeploy","description":"Automated Software Deployment.","assignment_group":"68fab70e47b81250bda7e49b506d43ac","implementation_plan":"Software update is tested and results can be found in Test Summaries Tab; When the change is approved the implementation happens automated by the CICD pipeline within the change planned start and end time window.","backout_plan":"When software fails in production, the previous software release will be re-deployed.","test_plan":"Testing if the software was successfully deployed"}}'
           change-request: >-
             {
               "setCloseCode":"true",
@@ -71,15 +70,6 @@ jobs:
         run: echo "change-request-number = ${{ steps.create.outputs.change-request-number }} and change-request-sys-id = ${{ steps.create.outputs.change-request-sys-id }} " >> $GITHUB_OUTPUT
         # deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy"}'
         
-#deploy:
-#  name: Deploy
-#  needs: changeApproval
-#  runs-on: ubuntu-latest
-  
-#  steps:
-#   - name: Run deployment script
-#     run: echo Completed Deployment.
-
   producao:
     name: Produção
     needs: deploy
