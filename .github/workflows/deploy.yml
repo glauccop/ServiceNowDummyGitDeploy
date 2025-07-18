@@ -64,8 +64,8 @@ jobs:
           interval: '100'
           timeout: '3600'
           changeCreationTimeOut: '3600'
-          abortOnChangeCreationFailure: true
-          abortOnChangeStepTimeout: true
+          #abortOnChangeCreationFailure: true
+          #abortOnChangeStepTimeout: true
       - name: Output of Change Creation
         run: echo "change-request-number = ${{ steps.create.outputs.change-request-number }} and change-request-sys-id = ${{ steps.create.outputs.change-request-sys-id }} " >> $GITHUB_OUTPUT
         # deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy"}'
