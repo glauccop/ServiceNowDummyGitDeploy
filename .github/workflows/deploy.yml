@@ -11,14 +11,14 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Build
         run: echo "Compilando o Aplicativo"
 
   desenvolvimento:
     name: Desenvolvimento
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: build
     steps:
       - name: Dummy Deploy - desenvolvimento
@@ -26,7 +26,7 @@ jobs:
 
   homologacao:
     name: Homologação
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: desenvolvimento
     steps:
       - name: Dummy Deploy - desenvolvimento
@@ -35,7 +35,7 @@ jobs:
   deploy:
     name: ServiceNow Change Approval
     needs: homologacao
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: ServiceNow DevOps Change Approval
@@ -82,7 +82,7 @@ jobs:
   producao:
     name: Deploy para Produção
     needs: deploy
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     
     steps:
       - name: Executar deploy em produção
