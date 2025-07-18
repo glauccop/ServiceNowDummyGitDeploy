@@ -34,7 +34,7 @@ jobs:
 
   ServiceNowDevOpsChange:
     # jobs that must complete successfully before this job will run
-    needs: build
+    needs: homologacao
     # type of machine to run the job on
     runs-on: ubuntu-latest
     name: 'ServiceNow DevOps Change'
