@@ -70,7 +70,7 @@ changeApproval:
        # deployment-gate: '{"environment":"deployment_gate","jobName":"Deploy"}'
         
 deploy:
-  name: 'Deploy'
+  name: Deploy
   needs: changeApproval
   runs-on: ubuntu-latest
   
