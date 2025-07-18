@@ -81,7 +81,7 @@ jobs:
 #     run: echo Completed Deployment.
 
   producao:
-    name: Deploy para Produção
+    name: Produção
     needs: deploy
     runs-on: ubuntu-latest
     
