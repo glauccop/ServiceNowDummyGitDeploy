@@ -1,4 +1,4 @@
-name: Git Dummy Pipeline para integrar com o ServiceNow
+name: ChangeDevOps Simulation
 
 on:
 
@@ -11,14 +11,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Build
         run: echo "Compilando o Aplicativo"
 
   desenvolvimento:
     name: Desenvolvimento
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Dummy Deploy - desenvolvimento
@@ -26,7 +26,7 @@ jobs:
 
   homologacao:
     name: Homologação
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs: desenvolvimento
     steps:
       - name: Dummy Deploy - desenvolvimento
@@ -35,11 +35,11 @@ jobs:
   deploy:
     name: ServiceNow Change Approval
     needs: homologacao
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: ServiceNow DevOps Change Approval
-        uses: ServiceNow/servicenow-devops-change@v6.0.0
+        uses: ServiceNow/servicenow-devops-change@v2.0.0
         id: create
         with:
           ##devops-integration-user-name: ${{ vars.SN_DEVOPS_USER }}
@@ -82,7 +82,7 @@ jobs:
   producao:
     name: Deploy para Produção
     needs: deploy
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     
     steps:
       - name: Executar deploy em produção
